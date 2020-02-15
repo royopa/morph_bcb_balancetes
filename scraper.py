@@ -51,7 +51,7 @@ def main():
     os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 
     today = datetime.date.today()
-    ano_inicial = 1988
+    ano_inicial = 1995
     ano_final = int(today.strftime('%Y'))
     mes_final = int(today.strftime('%m'))
 
