@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[33]:
-
-
 import os
 import shutil
 import pandas as pd
 from pathlib import Path
+
+# move arquivos para uma única pasta
+def move_arquivos(lista_paths, index_name):
+    for file_path in sorted(lista_paths):
+        folder_path = os.path.join('downloads', 'bases', index_name)
+        if not os.path.exists(folder_path):
+            Path(folder_path).mkdir(parents=True, exist_ok=True)
+
+        file_path_new = os.path.join(folder_path, file_path.split('/')[-1])
+        print(file_path_new)
+        shutil.move(file_path, file_path_new)
+    return True
+
 
 # monta os arquivos em um único arquivo
 def merge_arquivos(lista_paths, file_name):
@@ -39,14 +48,8 @@ def prepare_bases_folder():
     return folder_path
 
 
-# In[34]:
-
-
 download_folder = os.path.join('downloads')
 prepare_bases_folder()
-
-
-# In[35]:
 
 
 files = {
@@ -56,11 +59,9 @@ files = {
     'COOPERATIVAS.CSV':[],
     'LIQUIDACAO.CSV':[],
     'SOCIEDADES.CSV':[],
-    'COMBINADOS.CSV':[]
+    'COMBINADOS.CSV':[],
+    'BLOPRUDENCIAL.CSV':[]
 }
-
-
-# In[36]:
 
 
 for file_name in sorted(os.listdir(download_folder)):
@@ -74,20 +75,12 @@ for file_name in sorted(os.listdir(download_folder)):
     ano = file_name[:4]
     mes = file_name[4:6]
     print(ano, mes, file_name, file_name[6:])
+
     files.get(file_name[6:]).append(file_path)
-
-
-# In[ ]:
 
 
 for index_name in files:
     print(index_name)
     file_path = files.get(index_name)
-    merge_arquivos(file_path, index_name)
-
-
-# In[ ]:
-
-
-
-
+    #merge_arquivos(file_path, index_name)
+    move_arquivos(file_path, index_name)
