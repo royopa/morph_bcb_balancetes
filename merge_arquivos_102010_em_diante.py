@@ -17,8 +17,6 @@ def prepare_bases_folder():
 
 prepare_bases_folder()
 
-folder_name = 'BANCOS.CSV'
-
 files = [
     'BANCOS.CSV',
     'CONGLOMERADOS.CSV',
@@ -26,7 +24,7 @@ files = [
     'COOPERATIVAS.CSV',
     'LIQUIDACAO.CSV',
     'SOCIEDADES.CSV',
-    'COMBINADOS.CSV',
+    #'COMBINADOS.CSV',
     'BLOPRUDENCIAL.CSV'
 ]
 
