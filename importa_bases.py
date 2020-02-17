@@ -30,12 +30,13 @@ for folder_name in files:
     print(df.head())
 
     nome_relatorio = folder_name.split('.')[0].lower()
+    nome_tabela = 'balancete_'.format(nome_relatorio)
 
     # salva os registros no banco de dados
-    df.to_sql('balancete_{}'.format(nome_relatorio), con=engine, if_exists='replace')
+    df.to_sql(nome_tabela, con=engine, if_exists='replace')
 
     # executa para ver os resultados retornados que foram importados
-    df_banco = engine.execute("SELECT * FROM balancete_{}".format(nome_relatorio)).fetchall()
+    df_banco = engine.execute("SELECT * FROM {}".format(nome_tabela)).fetchall()
     print(nome_relatorio)
     print(len(df_banco))
     print('Registros importados com sucesso.')
