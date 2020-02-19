@@ -18,7 +18,7 @@ files = [
     'LIQUIDACAO.CSV',
     'SOCIEDADES.CSV',
     #'COMBINADOS.CSV',
-    'BLOPRUDENCIAL.CSV'
+    #'BLOPRUDENCIAL.CSV'
 ]
 
 for folder_name in files:
@@ -31,6 +31,37 @@ for folder_name in files:
 
     nome_relatorio = folder_name.split('.')[0].lower()
     nome_tabela = 'balancete_'.format(nome_relatorio)
+
+    # remove unnamed columns
+    lista_ignorar = [
+        'dt_base',
+        'documento',
+        'cnpj',
+        'agencia',
+        'no_instituicao',
+        'no_conglomerado',
+        'taxonomia',
+        'no_conta'
+    ]
+
+    for coluna in df.columns:
+        if coluna not in lista_ignorar:
+            print(coluna)
+            '''
+            df[coluna] = df[coluna].astype(str)
+            df[coluna] = df[coluna].str.replace('.', '')
+            df[coluna] = df[coluna].str.replace(',', '.')
+            df[coluna] = df[coluna].str.replace('Não', '0')
+            df[coluna] = df[coluna].str.replace('Sim', '1')
+            df[coluna] = df[coluna].str.replace('NI', '0')
+            df[coluna] = df[coluna].str.replace('NA', '0')
+            df[coluna] = df[coluna].str.replace('%', '')
+            df[coluna] = df[coluna].str.replace('*', '0')
+            df[coluna] = df[coluna].astype(float)
+            '''
+            df[coluna] = df[coluna].apply(pd.to_numeric, errors='coerce')
+
+    continue
 
     # salva os registros no banco de dados
     df.to_sql(nome_tabela, con=engine, if_exists='replace')
