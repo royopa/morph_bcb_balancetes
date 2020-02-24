@@ -5,3 +5,4 @@ bizdays
 beautifulsoup4
 scraperwiki
 requests
+tqdm
