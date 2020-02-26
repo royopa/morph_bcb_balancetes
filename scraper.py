@@ -161,10 +161,6 @@ def processa_arquivo(file_path):
 
 
 if __name__ == '__main__':
-    print('Renomeando arquivo sqlite')
-    if os.path.exists('data.sqlite'):
-        shutil.copy('data.sqlite', 'scraperwiki.sqlite')
-
     main()
 
     # rename file
