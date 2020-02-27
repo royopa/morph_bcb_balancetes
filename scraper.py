@@ -7,9 +7,8 @@ import pandas as pd
 import shutil
 import requests
 from zipfile import ZipFile
-import consolida_arquivos_baixados_1995_2020
-import merge_arquivos_102010_em_diante
-
+import consolida_arquivos
+import merge_arquivos
 
 
 def download_file(url, file_path):
@@ -53,7 +52,7 @@ def main():
     os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 
     today = datetime.date.today()
-    ano_inicial = 2019
+    ano_inicial = 2011
     ano_final = int(today.strftime('%Y'))
     mes_final = int(today.strftime('%m'))
 
@@ -68,8 +67,8 @@ def main():
             download_arquivo(mes, ano)
             #processa_arquivo(mes, ano)
     
-    consolida_arquivos_baixados_1995_2020.main()
-    merge_arquivos_102010_em_diante.main()   
+    consolida_arquivos.main()
+    merge_arquivos.main()   
 
     return True
 
