@@ -24,8 +24,7 @@ def download_file(url, file_path):
 
     with open(file_path, "wb") as handle:
         print('Downloading', url)
-        for data in tqdm(response.iter_content()):
-            handle.write(data)
+        handle.write(data)
     handle.close()
     return True
 
