@@ -6,7 +6,6 @@ import scraperwiki
 import pandas as pd
 import shutil
 import requests
-from tqdm import tqdm
 from zipfile import ZipFile
 
 
@@ -24,7 +23,8 @@ def download_file(url, file_path):
 
     with open(file_path, "wb") as handle:
         print('Downloading', url)
-        handle.write(data)
+        for data in response.iter_content():
+            handle.write(data)    
     handle.close()
     return True
 
