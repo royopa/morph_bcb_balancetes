@@ -8,6 +8,7 @@ import requests
 from zipfile import ZipFile
 import consolida_arquivos
 import merge_arquivos
+import scraperwiki
 
 
 def download_file(url, file_path):
@@ -45,11 +46,6 @@ def create_download_folder():
 def main():
     create_download_folder()
 
-    # morph.io requires this db filename, but scraperwiki doesn't nicely
-    # expose a way to alter this. So we'll fiddle our environment ourselves
-    # before our pipeline modules load.
-    os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
-
     today = datetime.date.today()
     ano_inicial = 2011
     ano_final = int(today.strftime('%Y'))
@@ -62,14 +58,7 @@ def main():
                 break
 
             mes = str(mes).zfill(2)
-
             download_arquivo(mes, ano)
-            #processa_arquivo(mes, ano)
-    
-    consolida_arquivos.main()
-    merge_arquivos.main()
-    importa_bases.main()
-
     return True
 
 
@@ -86,6 +75,11 @@ def download_arquivo(mes, ano):
         '{}cooperativas/{}{}COOPERATIVAS.ZIP'
     ]
 
+    # morph.io requires this db filename, but scraperwiki doesn't nicely
+    # expose a way to alter this. So we'll fiddle our environment ourselves
+    # before our pipeline modules load.
+    os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
+
     for tipo_if in tipos_ifs:
         # monta a URL do período
         url = tipo_if.format(url_base, ano, mes)
@@ -97,32 +91,8 @@ def download_arquivo(mes, ano):
             file_extracted = extract_file(file_path)
             print('Arquivo extraído', file_extracted)
             os.remove(file_path)
+            processa_arquivo(file_extracted)
 
-    return True
-
-    try:
-        df = pd.read_csv(
-            url,
-            sep=';',
-            encoding='latin1'
-        )
-    except Exception:
-        print('Erro ao baixar arquivo', url)
-        return False
-
-    # transforma o campo CO_PRD
-    df['CO_PRD'] = df['CNPJ_FUNDO'].str.replace('.','')
-    df['CO_PRD'] = df['CO_PRD'].str.replace('/','')
-    df['CO_PRD'] = df['CO_PRD'].str.replace('-','')
-    df['CO_PRD'] = df['CO_PRD'].str.zfill(14)
-
-    df['DT_COMPTC'] = pd.to_datetime(df['DT_COMPTC'], errors='coerce').dt.strftime('%Y-%m-%d')
-    df['DT_REF'] = df['DT_COMPTC']
-
-    for row in df.to_dict('records'):
-        scraperwiki.sqlite.save(unique_keys=['CO_PRD', 'DT_REF'], data=row)
-
-    print('{} Registros importados com sucesso', len(df))
     return True
 
 
@@ -140,28 +110,75 @@ def extract_file(path_file):
 
 def processa_arquivo(file_path):
     try:
-        df = pd.read_csv(
-            url,
-            sep=';',
-            encoding='latin1'
-        )
-    except Exception:
-        print('Erro ao baixar arquivo', url)
+        df = pd.read_csv(file_path, sep=';', skiprows=3, encoding='latin1')
+    except Exception as e:
+        print('Erro ao ler arquivo', file_path, e)
         return False
 
-    # transforma o campo CO_PRD
-    df['CO_PRD'] = df['CNPJ_FUNDO'].str.replace('.','')
-    df['CO_PRD'] = df['CO_PRD'].str.replace('/','')
-    df['CO_PRD'] = df['CO_PRD'].str.replace('-','')
-    df['CO_PRD'] = df['CO_PRD'].str.zfill(14)
+    # transforma o campo saldo em número
+    df['SALDO'] = df['SALDO'].str.replace(',','.')
+    df['SALDO'] = pd.to_numeric(df['SALDO'])
 
-    df['DT_COMPTC'] = pd.to_datetime(df['DT_COMPTC'], errors='coerce').dt.strftime('%Y-%m-%d')
-    df['DT_REF'] = df['DT_COMPTC']
+    # remove os caracteres em brancos do nome das colunas
+    df.rename(columns=lambda x: x.strip(), inplace=True)
 
+    a_renomear = {
+        '#DATA_BASE':'dt_base',
+        'DOCUMENTO':'documento',
+        'CNPJ':'cnpj',
+        'AGENCIA':'agencia',
+        'NOME_INSTITUICAO':'no_instituicao',
+        'COD_CONGL':'co_conglomerado',
+        'NOME_CONGL':'no_conglomerado',
+        'TAXONOMIA':'taxonomia',
+        'CONTA':'nu_conta',
+        'NOME_CONTA':'no_conta',
+        'SALDO':'saldo',
+        'REALIZAVEL ATE 3M':'realizavel_ate_3m',
+        'REALIZAVEL APOS 3M':'realizavel_apos_3m'
+    }
+
+    # renomeia as colunas
+    df = df.rename(columns=a_renomear)
+
+    # remove unnamed columns
+    lista_ignorar = [
+        'dt_base',
+        'documento',
+        'cnpj',
+        'agencia',
+        'no_instituicao',
+        'no_conglomerado',
+        'taxonomia',
+        'no_conta'
+    ]
+
+    for coluna in df.columns:
+        if coluna not in lista_ignorar:
+            print(coluna)
+            '''
+            df[coluna] = df[coluna].astype(str)
+            df[coluna] = df[coluna].str.replace('.', '')
+            df[coluna] = df[coluna].str.replace(',', '.')
+            df[coluna] = df[coluna].str.replace('Não', '0')
+            df[coluna] = df[coluna].str.replace('Sim', '1')
+            df[coluna] = df[coluna].str.replace('NI', '0')
+            df[coluna] = df[coluna].str.replace('NA', '0')
+            df[coluna] = df[coluna].str.replace('%', '')
+            df[coluna] = df[coluna].str.replace('*', '0')
+            df[coluna] = df[coluna].astype(float)
+            '''
+            df[coluna] = df[coluna].apply(pd.to_numeric, errors='coerce')
+
+    # salva o file_path
+    print(file_path.split('downloads')[1][1:])
+    df['file'] = file_path.split('downloads')[1][1:]
+    
     for row in df.to_dict('records'):
-        scraperwiki.sqlite.save(unique_keys=['CO_PRD', 'DT_REF'], data=row)
+        scraperwiki.sqlite.save(unique_keys=['dt_base', 'documento', 'cnpj'], data=row)
 
-    print('{} Registros importados com sucesso', len(df))
+    print('{} Registros importados com sucesso'.format(len(df)))
+
     return True
 
 
