@@ -2,6 +2,7 @@ import os
 import shutil
 import pandas as pd
 from sqlalchemy import create_engine
+import scraperwiki
 
 from dotenv import load_dotenv
 from dotenv import find_dotenv
@@ -9,6 +10,11 @@ load_dotenv(find_dotenv())
 
 
 def main():
+    # morph.io requires this db filename, but scraperwiki doesn't nicely
+    # expose a way to alter this. So we'll fiddle our environment ourselves
+    # before our pipeline modules load.
+    os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
+
     engine = create_engine(os.environ.get('SQLALCHEMY_DATABASE_URI'), echo=False)
 
 
@@ -24,8 +30,6 @@ def main():
     ]
 
     for folder_name in files:
-
-        download_folder = os.path.join('downloads','bases',folder_name)
         df = pd.read_csv(os.path.join('bases', folder_name))
 
         print(df.columns)
@@ -62,6 +66,12 @@ def main():
                 df[coluna] = df[coluna].astype(float)
                 '''
                 df[coluna] = df[coluna].apply(pd.to_numeric, errors='coerce')
+
+        for row in df.to_dict('records'):
+            scraperwiki.sqlite.save(unique_keys=['dt_base', 'documento', 'cnpj'], data=row)
+
+        print('{} Registros importados com sucesso', len(df))
+        return True
 
         continue
 

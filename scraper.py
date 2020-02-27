@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import datetime
-import scraperwiki
 import pandas as pd
 import shutil
 import requests
@@ -68,7 +67,8 @@ def main():
             #processa_arquivo(mes, ano)
     
     consolida_arquivos.main()
-    merge_arquivos.main()   
+    merge_arquivos.main()
+    importa_bases.main()
 
     return True
 
