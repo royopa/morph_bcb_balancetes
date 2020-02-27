@@ -15,58 +15,64 @@ def prepare_bases_folder():
     return folder_path
 
 
-prepare_bases_folder()
+def main():
 
-files = [
-    'BANCOS.CSV',
-    'CONGLOMERADOS.CSV',
-    'CONSORCIOS.CSV',
-    'COOPERATIVAS.CSV',
-    'LIQUIDACAO.CSV',
-    'SOCIEDADES.CSV',
-    #'COMBINADOS.CSV',
-    'BLOPRUDENCIAL.CSV'
-]
+    prepare_bases_folder()
 
-for folder_name in files:
+    files = [
+        'BANCOS.CSV',
+        'CONGLOMERADOS.CSV',
+        'CONSORCIOS.CSV',
+        'COOPERATIVAS.CSV',
+        'LIQUIDACAO.CSV',
+        'SOCIEDADES.CSV',
+        'COMBINADOS.CSV',
+        'BLOPRUDENCIAL.CSV'
+    ]
 
-    download_folder = os.path.join('downloads','bases',folder_name)
+    for folder_name in files:
 
-    dfs = []
-    for file_name in sorted(os.listdir(download_folder)):
-        print(file_name)
-        file_path = os.path.join(download_folder, file_name)
-        df = pd.read_csv(file_path, sep=';', skiprows=3, encoding='latin1')
-        # remove os caracteres em brancos do nome das colunas
-        df.rename(columns=lambda x: x.strip(), inplace=True)
-        # transforma o campo saldo em número
-        df['SALDO'] = df['SALDO'].str.replace(',','.')
-        df['SALDO'] = pd.to_numeric(df['SALDO'])
-        # junta em um unico dataframe
-        dfs.append(df)
+        download_folder = os.path.join('downloads','bases',folder_name)
 
-    df = pd.concat(dfs, axis=0, ignore_index=True)
+        dfs = []
+        for file_name in sorted(os.listdir(download_folder)):
+            print(file_name)
+            file_path = os.path.join(download_folder, file_name)
+            df = pd.read_csv(file_path, sep=';', skiprows=3, encoding='latin1')
+            # remove os caracteres em brancos do nome das colunas
+            df.rename(columns=lambda x: x.strip(), inplace=True)
+            # transforma o campo saldo em número
+            df['SALDO'] = df['SALDO'].str.replace(',','.')
+            df['SALDO'] = pd.to_numeric(df['SALDO'])
+            # junta em um unico dataframe
+            dfs.append(df)
 
-    a_renomear = {
-        '#DATA_BASE':'dt_base',
-        'DOCUMENTO':'documento',
-        'CNPJ':'cnpj',
-        'AGENCIA':'agencia',
-        'NOME_INSTITUICAO':'no_instituicao',
-        'COD_CONGL':'co_conglomerado',
-        'NOME_CONGL':'no_conglomerado',
-        'TAXONOMIA':'taxonomia',
-        'CONTA':'nu_conta',
-        'NOME_CONTA':'no_conta',
-        'SALDO':'saldo',
-        'REALIZAVEL ATE 3M':'realizavel_ate_3m',
-        'REALIZAVEL APOS 3M':'realizavel_apos_3m'
-    }
+        df = pd.concat(dfs, axis=0, ignore_index=True)
 
-    # renomeia as colunas
-    df = df.rename(columns=a_renomear)
+        a_renomear = {
+            '#DATA_BASE':'dt_base',
+            'DOCUMENTO':'documento',
+            'CNPJ':'cnpj',
+            'AGENCIA':'agencia',
+            'NOME_INSTITUICAO':'no_instituicao',
+            'COD_CONGL':'co_conglomerado',
+            'NOME_CONGL':'no_conglomerado',
+            'TAXONOMIA':'taxonomia',
+            'CONTA':'nu_conta',
+            'NOME_CONTA':'no_conta',
+            'SALDO':'saldo',
+            'REALIZAVEL ATE 3M':'realizavel_ate_3m',
+            'REALIZAVEL APOS 3M':'realizavel_apos_3m'
+        }
 
-    print(df.shape)
-    print(df.columns)
+        # renomeia as colunas
+        df = df.rename(columns=a_renomear)
 
-    df.to_csv(os.path.join('bases', folder_name), index=None)
+        print(df.shape)
+        print(df.columns)
+
+        df.to_csv(os.path.join('bases', folder_name), index=None)
+
+
+if __name__ == '__main__':
+    main()

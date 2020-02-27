@@ -5,6 +5,7 @@ import shutil
 import pandas as pd
 from pathlib import Path
 
+
 # move arquivos para uma única pasta
 def move_arquivos(lista_paths, index_name):
     for file_path in sorted(lista_paths):
@@ -48,39 +49,44 @@ def prepare_bases_folder():
     return folder_path
 
 
-download_folder = os.path.join('downloads')
-prepare_bases_folder()
+def main():
+    download_folder = os.path.join('downloads')
+    prepare_bases_folder()
 
 
-files = {
-    'BANCOS.CSV':[],
-    'CONGLOMERADOS.CSV':[],
-    'CONSORCIOS.CSV':[],
-    'COOPERATIVAS.CSV':[],
-    'LIQUIDACAO.CSV':[],
-    'SOCIEDADES.CSV':[],
-    'COMBINADOS.CSV':[],
-    'BLOPRUDENCIAL.CSV':[]
-}
+    files = {
+        'BANCOS.CSV':[],
+        'CONGLOMERADOS.CSV':[],
+        'CONSORCIOS.CSV':[],
+        'COOPERATIVAS.CSV':[],
+        'LIQUIDACAO.CSV':[],
+        'SOCIEDADES.CSV':[],
+        'COMBINADOS.CSV':[],
+        'BLOPRUDENCIAL.CSV':[]
+    }
 
 
-for file_name in sorted(os.listdir(download_folder)):
-    file_path = os.path.join(download_folder, file_name)
-        
-    if not file_path.lower().endswith('.csv'):
-        continue
+    for file_name in sorted(os.listdir(download_folder)):
+        file_path = os.path.join(download_folder, file_name)
+            
+        if not file_path.lower().endswith('.csv'):
+            continue
 
-    print(file_name)
-    data_base = file_name[:7]
-    ano = file_name[:4]
-    mes = file_name[4:6]
-    print(ano, mes, file_name, file_name[6:])
+        print(file_name)
+        data_base = file_name[:7]
+        ano = file_name[:4]
+        mes = file_name[4:6]
+        print(ano, mes, file_name, file_name[6:])
 
-    files.get(file_name[6:]).append(file_path)
+        files.get(file_name[6:]).append(file_path)
 
 
-for index_name in files:
-    print(index_name)
-    file_path = files.get(index_name)
-    #merge_arquivos(file_path, index_name)
-    move_arquivos(file_path, index_name)
+    for index_name in files:
+        print(index_name)
+        file_path = files.get(index_name)
+        #merge_arquivos(file_path, index_name)
+        move_arquivos(file_path, index_name)
+
+
+if __name__ == '__main__':
+    main()
