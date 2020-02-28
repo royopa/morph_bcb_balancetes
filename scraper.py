@@ -47,8 +47,8 @@ def main():
     create_download_folder()
 
     today = datetime.date.today()
-    ano_inicial = 2011
     ano_final = int(today.strftime('%Y'))
+    ano_inicial = ano_final - 1
     mes_final = int(today.strftime('%m'))
 
     for ano in range(ano_inicial, ano_final+1):
